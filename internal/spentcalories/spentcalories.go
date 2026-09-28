@@ -2,6 +2,7 @@ package spentcalories
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -56,10 +57,42 @@ func meanSpeed(steps int, height float64, duration time.Duration) float64 {
 	return distanceKm / duration.Hours()
 }
 
+// TrainingInfo возвращает информацию о тренировке, включая тип тренировки, длительность, дистанцию, скорость и количество сожженных калорий.
 func TrainingInfo(data string, weight, height float64) (string, error) {
-	// TODO: реализовать функцию
+	steps, trainingType, duration, err := parseTraining(data)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	var calories float64
+	switch trainingType {
+	case "Бег":
+		calories, err = RunningSpentCalories(steps, weight, height, duration)
+	case "Ходьба":
+		calories, err = WalkingSpentCalories(steps, weight, height, duration)
+	default:
+		return "", fmt.Errorf("неизвестный тип тренировки")
+	}
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	distanceKm := distance(steps, height)
+	speed := meanSpeed(steps, height, duration)
+
+	return fmt.Sprintf(
+		"Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n",
+		trainingType,
+		duration.Hours(),
+		distanceKm,
+		speed,
+		calories,
+	), nil
 }
 
+// RunningSpentCalories рассчитывает количество калорий, сожженных во время бега.
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	if steps <= 0 {
 		return 0, fmt.Errorf("количество шагов должно быть больше нуля")
@@ -81,6 +114,7 @@ func RunningSpentCalories(steps int, weight, height float64, duration time.Durat
 	return calories, nil
 }
 
+// WalkingSpentCalories рассчитывает количество калорий, сожженных во время ходьбы.
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	if steps <= 0 {
 		return 0, fmt.Errorf("количество шагов должно быть больше нуля")
