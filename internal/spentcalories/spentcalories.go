@@ -1,6 +1,9 @@
 package spentcalories
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -13,8 +16,30 @@ const (
 	walkingCaloriesCoefficient = 0.5  // коэффициент для расчета калорий при ходьбе
 )
 
+// parseTraining разбирает строку данных о тренировке и возвращает количество шагов, тип тренировки и продолжительность.
 func parseTraining(data string) (int, string, time.Duration, error) {
-	// TODO: реализовать функцию
+	parts := strings.Split(data, ",")
+	if len(parts) != 3 {
+		return 0, "", 0, fmt.Errorf("неверный формат данных: %q", data)
+	}
+
+	steps, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, "", 0, fmt.Errorf("не удалось определить количество шагов: %w", err)
+	}
+	if steps <= 0 {
+		return 0, "", 0, fmt.Errorf("количество шагов должно быть больше нуля")
+	}
+
+	duration, err := time.ParseDuration(parts[2])
+	if err != nil {
+		return 0, "", 0, fmt.Errorf("не удалось определить продолжительность тренировки: %w", err)
+	}
+	if duration <= 0 {
+		return 0, "", 0, fmt.Errorf("продолжительность тренировки должна быть больше нуля")
+	}
+
+	return steps, parts[1], duration, nil
 }
 
 func distance(steps int, height float64) float64 {
