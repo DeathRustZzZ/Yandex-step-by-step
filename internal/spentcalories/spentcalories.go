@@ -61,7 +61,24 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 }
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
-	// TODO: реализовать функцию
+	if steps <= 0 {
+		return 0, fmt.Errorf("количество шагов должно быть больше нуля")
+	}
+	if weight <= 0 {
+		return 0, fmt.Errorf("вес должен быть больше нуля")
+	}
+	if height <= 0 {
+		return 0, fmt.Errorf("рост должен быть больше нуля")
+	}
+	if duration <= 0 {
+		return 0, fmt.Errorf("продолжительность бега должна быть больше нуля")
+	}
+
+	speed := meanSpeed(steps, height, duration)
+	durationInMinutes := duration.Minutes()
+	calories := weight * speed * durationInMinutes / minInH
+
+	return calories, nil
 }
 
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
